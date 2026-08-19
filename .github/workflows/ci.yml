@@ -1,0 +1,45 @@
+# The leaf's own tests: no platform, no emulator, no Docker.
+#
+# A leaf is the half of a cell that a team on this engine would actually write,
+# and it has to stand on its own — clone it, resolve it, run its tests. That is
+# DoD item 1 in the family plan, and it is checkable here in seconds rather
+# than only in the platform's 14-minute acceptance run.
+#
+# THE PIPELINE ITSELF IS NOT RUN HERE. That needs the emulator, the vendors and
+# a stack, and it belongs in the platform's acceptance workflow, which now
+# checks this repository out and runs `make verify PRODUCT=...` against it.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.3"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      # --frozen: the lockfile is the claim. A CI run that silently resolved a
+      # different dependency set would be testing something no one else has.
+      - run: uv sync --frozen --group dev
+      - run: uv run --frozen --no-sync --group dev ruff check .
+      - run: uv run --frozen --no-sync --group dev ruff format --check .
+      - name: tests
+        run: uv run --frozen --no-sync --group dev pytest tests -q -m "not fixtures"
+      # A SKIPPED TEST IS NOT A PASSING ONE. These tests are what stand between
+      # this leaf and a second copy of core's SQL, so CI fails if the suite
+      # quietly shrinks to nothing.
+      - name: the suite actually ran
+        run: |
+          uv run --frozen --no-sync --group dev pytest tests -q -m "not fixtures" 2>&1 | tee /tmp/out
+          grep -qE "^[0-9]+ passed" /tmp/out
