@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/platform/platformProperties.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "silver-conform",
+    "description": "Bronze to silver: dedupe on the source's own sequence, conform, quarantine."
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "c41f7ba8-6d02-4e59-9a33-1b7e5f0c8d24"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/platform/platformProperties.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "bronze-ingest",
+    "description": "Landing to bronze Delta tables, verbatim: no dedupe, no conforming, no types."
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "5e2a9c17-4b83-4d16-8f7a-0c93e6b4d215"
+  }
+}

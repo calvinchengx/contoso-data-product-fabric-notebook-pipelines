@@ -1,0 +1,55 @@
+.venv/
+__pycache__/
+*.egg-info/
+capture/shots/
+state.json
+*_summary.json
+
+# Personal assistant config — the rules themselves are in RULES.md,
+# which is committed so CI and every contributor see them.
+CLAUDE.md
+CLAUDE.local.md
+gold/_export.json
+catalog.json
+gold/_columns.json
+# What `make reconcile` read back from the Warehouse — an observation of a
+# particular run, not a fact about the repository.
+gold/_reconcile_sql.json
+# The gold numbers a particular run produced. `product_snapshot.json` at the
+# repo root is the one compare_products reads; this is the staging copy
+# platform/gold.py writes beside the dbt project, and it is an output like the
+# rest of them.
+gold/_snapshot.json
+
+# dbt writes these on every run: the compiled SQL it just built, the manifest
+# describing it, and its own log. They are OUTPUTS of gold/models/*.sql, so
+# committing them means every run dirties the tree with a rebuild of something
+# the repo already holds the source of — and a stale manifest reads like a
+# source of truth while describing a project that no longer exists.
+# .user.yml is dbt's anonymous-usage id, generated per machine.
+# The product's dbt project, staged into gold/ by platform/gold.py on every
+# run. Not tracked: a checked-in copy is a second source of truth, and this one
+# had already drifted from contoso-data-product before it was removed.
+gold/models/
+gold/macros/
+gold/tests/
+gold/target/
+gold/logs/
+gold/.user.yml
+
+# Emitted by platform/pbip.py — a build output, not a source.
+artifacts/
+
+# Local tooling
+.nwave/
+.wheels/
+
+# Generated from contoso-sources at `make up` -- never edited, never committed.
+compose/.generated/
+
+# Staged into gold/ by steps/gold.py from the product package on every run.
+gold/models/
+gold/macros/
+gold/tests/
+gold/target/
+gold/logs/

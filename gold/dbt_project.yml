@@ -1,0 +1,14 @@
+name: contoso_gold
+version: "1.0.0"
+config-version: 2
+profile: contoso_gold
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+
+# dbt-fabric's own `table` materialization, unmodified. It emits Fabric/Synapse
+# CTAS — `EXEC('CREATE TABLE … AS SELECT …')` — which is what a Warehouse
+# expects, and exactly what would run against api.fabric.microsoft.com.
+models:
+  contoso_gold:
+    +materialized: table

@@ -1,0 +1,20 @@
+# Every value from the environment. Nothing about the target is written here,
+# so the same file points at the local family or at a real Fabric Warehouse
+# depending only on what the caller exports.
+contoso_gold:
+  target: dev
+  outputs:
+    dev:
+      type: fabric
+      driver: "ODBC Driver 18 for SQL Server"
+      server: "{{ env_var('DBT_HOST') }}"
+      port: "{{ env_var('DBT_PORT') | int }}"
+      database: "{{ env_var('DBT_DATABASE') }}"
+      schema: dbo
+      # The Entra token this platform already holds, injected the way the
+      # driver expects. Real Fabric accepts the same thing from the same flow.
+      authentication: "ActiveDirectoryAccessToken"
+      access_token: "{{ env_var('DBT_ACCESS_TOKEN') }}"
+      encrypt: false
+      trust_cert: true
+      threads: 1

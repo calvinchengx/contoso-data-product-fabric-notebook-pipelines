@@ -1,0 +1,133 @@
+[project]
+name = "contoso-data-product-fabric-notebook-pipelines"
+version = "0.1.0"
+description = "The Contoso data product for Fabric notebooks and Data Pipelines: the notebook definitions, the medallion steps, and the semantic model."
+requires-python = ">=3.12"
+authors = [{name = "Calvin Cheng", email = "calvin@calvinx.com"}]
+
+# WHAT A FABRIC TEAM WOULD WRITE. The platform stands up the emulator; this is
+# the product that runs on it, and it talks to Fabric's own REST API exactly as
+# it would against the real tenant. That client lives here rather than in the
+# platform because a data product on real Fabric has no platform underneath it
+# -- only Fabric.
+dependencies = [
+    # THE PRODUCT, BY RELEASE. bronze/silver Spark logic and every line of gold
+    # SQL come from here and are not restated: two copies of `fct_sales.sql`
+    # agree until the day one of them is fixed.
+    #
+    # PINNED TO v0.1.1, matching what this cell was last verified against, so
+    # the split changes WHERE the code lives and nothing else. Moving to v0.2.0
+    # -- which relocated the dbt silver project into core -- is a separate
+    # change with its own verification.
+    "contoso-data-product",
+    # THE EMULATOR-OR-REAL CONTRACT, published by fabric-emulator's release and
+    # pinned by the PLATFORM's versions.env (FABRIC_EMULATOR_VERSION=0.29.0).
+    # The extras are not optional: the package is stdlib-only at its core and
+    # lazily imports azure-identity for real credentials and requests for
+    # sessions, so a bare install fails at the first call rather than at
+    # install time.
+    "fabric-target[real,sessions]",
+    "requests>=2.32,<3",
+    # The ERP source is a real Postgres, and its change stream is real Kafka.
+    "psycopg[binary]>=3.2,<4",
+    # The source specs are YAML; the catalog derives its entities from them
+    # rather than restating what the vendor already published.
+    "pyyaml>=6,<7",
+    "confluent-kafka>=2.6,<3",
+    "pyarrow>=18,<24",
+    # delta-rs, to read a table WITHOUT holding a Spark session. bronze and
+    # silver hand their transforms to Fabric, so the only thing this process
+    # still needs from a Delta table is to read the run metrics back.
+    "deltalake>=0.23,<2",
+    # The THIN Spark Connect client — about a megabyte, and no JVM.
+    "pyspark-client==4.1.1",
+]
+
+[dependency-groups]
+dev = ["pytest>=9.0.3,<10", "ruff>=0.14,<0.15", "ty>=0.0.1a1"]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+# A RELEASE, NOT A PATH: a leaf that resolves core from a sibling checkout
+# cannot be cloned on its own, which is DoD item 1 in the family plan.
+contoso-data-product = { url = "https://github.com/calvinchengx/contoso-data-product/releases/download/v0.1.1/contoso_data_product-0.1.1-py3-none-any.whl" }
+fabric-target = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/fabric_target-0.29.0-py3-none-any.whl" }
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",   # pycodestyle + pyflakes
+    "I",             # import order
+    "UP",            # pyupgrade — this repo is >=3.12, so say so
+    "B",             # bugbear
+    "SIM",           # simplify
+    "PTH",           # pathlib over os.path: the one that actually bites on Windows
+    "RUF",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# A Fabric notebook is not an ordinary module, and the two ways it differs are
+# both things ruff is right to flag anywhere else.
+#
+#   F821  `spark` and `notebook_exit` are injected by the HOST. Fabric's Spark
+#         pool binds them in production and the platform binds them against the
+#         emulator; declaring them here would shadow the real session with a
+#         stub, which is worse than the warning.
+#   E402  cells are executed in order, so imports belong in the cell that first
+#         needs them — a notebook whose imports are all hoisted to the top is
+#         no longer a notebook.
+#
+# Scoped by FILENAME rather than by path, because the notebook now lives where
+# Fabric's Git integration puts it — `definitions/{name}.{Type}/notebook-content.py`
+# — and a path-scoped ignore would have to be re-edited for every notebook this
+# platform grows. Every other module in steps/ is ordinary Python and keeps
+# both rules.
+"**/notebook-content.py" = ["F821", "E402"]
+
+[tool.ty.environment]
+# The steps import each other as top-level modules because each one also runs
+# standalone (`python steps/silver.py`), which puts steps/ on sys.path.
+# ty needs telling, or a sibling import resolves to nothing.
+extra-paths = ["steps"]
+
+[tool.ty.rules]
+# The generators arrive from a wheel installed outside the lock, so ty cannot
+# see them when it runs on a clean checkout. Their absence is not a type error.
+unresolved-import = "ignore"
+
+[[tool.ty.overrides]]
+# The notebook's `spark` and `notebook_exit` come from the HOST, not from an
+# import — Fabric's Spark pool binds them in production, engine.py does against
+# the emulator. Declaring them to satisfy the checker would shadow the real
+# session with a stub, which is a worse file than a suppressed rule.
+#
+# Scoped to the notebooks. Everywhere else an undefined name is a real bug, and
+# these are the modules most likely to acquire one, so the suppression is as
+# narrow as the tooling allows rather than switched off repo-wide.
+#
+# Scoped by FILENAME, for the reason the ruff ignore above already gives: the
+# notebook lives where Fabric's Git integration puts it,
+# `definitions/{name}.{Type}/notebook-content.py`, and a path-scoped pattern has
+# to be re-edited for every notebook. This one WAS path-scoped and named
+# `platform/silver_notebook.py` — a file that stopped existing when the notebook
+# moved into its definition folder — so it silently matched nothing. The ruff
+# half was converted at the time and this half was not, which is how the two
+# checkers ended up disagreeing about the same file.
+include = ["**/notebook-content.py"]
+
+[tool.ty.overrides.rules]
+unresolved-reference = "ignore"
+
+[tool.pytest.ini_options]
+# `fixtures` marks a test that needs a staged gold project or the published
+# generator wheels — things a bare clone does not have. `make test` deselects
+# them; they run after the pipeline has staged what they read. A deselection is
+# visible; a test that quietly passes on absent input is not.
+markers = [
+    "fixtures: needs the staged gold project or the published fixture wheels",
+]
