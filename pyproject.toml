@@ -27,6 +27,24 @@ dependencies = [
     # sessions, so a bare install fails at the first call rather than at
     # install time.
     "fabric-target[real,sessions]",
+    # THE SEEDED GENERATORS. `erp_system` and `reference_data` are the vendors'
+    # own account of what they published, and the ingest steps assert against
+    # them -- expected change-event counts, expected FX rows. They ship from the
+    # same fabric-emulator release as fabric-target.
+    #
+    # DECLARED HERE RATHER THAN INSTALLED BY `make fixtures`. That script puts
+    # them in whichever venv it is run from, which was this platform's while the
+    # product lived inside it. Now the steps run against the PRODUCT's venv, and
+    # a generator installed next door is not on their path -- which is exactly
+    # how this surfaced: `the fixture generators are not installed
+    # (erp_system)`. Declaring them also ends the warning that script carries,
+    # that any `uv sync` prunes them: pinned in the lockfile, nothing prunes.
+    #
+    # contoso-fixtures REQUIRES fabric-emulator-notebookutils as plain metadata,
+    # so omitting it makes the pair unresolvable.
+    "contoso-fixtures",
+    "contoso-fixtures-advanced",
+    "fabric-emulator-notebookutils",
     "requests>=2.32,<3",
     # The ERP source is a real Postgres, and its change stream is real Kafka.
     "psycopg[binary]>=3.2,<4",
@@ -54,6 +72,9 @@ package = false
 # cannot be cloned on its own, which is DoD item 1 in the family plan.
 contoso-data-product = { url = "https://github.com/calvinchengx/contoso-data-product/releases/download/v0.1.1/contoso_data_product-0.1.1-py3-none-any.whl" }
 fabric-target = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/fabric_target-0.29.0-py3-none-any.whl" }
+contoso-fixtures = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/contoso_fixtures-0.29.0-py3-none-any.whl" }
+contoso-fixtures-advanced = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/contoso_fixtures_advanced-0.29.0-py3-none-any.whl" }
+fabric-emulator-notebookutils = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/fabric_emulator_notebookutils-0.29.0-py3-none-any.whl" }
 
 [tool.ruff]
 line-length = 88

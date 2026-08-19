@@ -40,8 +40,16 @@ OM = os.environ.get("OM_URL", "http://localhost:8585/api/v1").rstrip("/")
 OM_USER = "admin@open-metadata.org"
 OM_PASSWORD = "admin"
 
-POS_SPEC = ROOT / "sources" / "contoso-pos" / "openapi.yaml"
-ERP_DDL = ROOT / "sources" / "contoso-erp" / "schema.sql"
+# THE VENDORS LIVE IN THEIR OWN REPOSITORY. These paths read
+# `ROOT / "sources" / ...`, which was correct while this product lived inside a
+# platform that carried a copy of every vendor. G13 moved the vendors to
+# contoso-sources and G2 moved this product out, so that path now names a
+# directory in neither repository. SOURCES is exported by the platform that
+# runs these steps; the fallback keeps a hand-run working.
+SOURCES = pathlib.Path(os.environ.get("SOURCES", ROOT.parent / "contoso-sources"))
+
+POS_SPEC = SOURCES / "contoso-pos" / "openapi.yaml"
+ERP_DDL = SOURCES / "contoso-erp" / "schema.sql"
 
 S = requests.Session()
 

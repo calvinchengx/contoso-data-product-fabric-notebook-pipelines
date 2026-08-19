@@ -10,41 +10,64 @@ match, while quietly testing something other than change data capture.
 from __future__ import annotations
 
 import json
+import os
 import pathlib
-import subprocess
 import time
 from typing import LiteralString, cast
 
 import psycopg
 import requests
 from fabric import log
-from sources import DEBEZIUM, erp_dsn
+from sources import DEBEZIUM, REDPANDA, erp_dsn
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-CONFIG = ROOT / "sources" / "contoso-erp" / "debezium-connector.json"
+# THE VENDORS LIVE IN THEIR OWN REPOSITORY. These paths read
+# `ROOT / "sources" / ...`, which was correct while this product lived inside a
+# platform that carried a copy of every vendor. G13 moved the vendors to
+# contoso-sources and G2 moved this product out, so that path now names a
+# directory in neither repository. SOURCES is exported by the platform that
+# runs these steps; the fallback keeps a hand-run working.
+SOURCES = pathlib.Path(os.environ.get("SOURCES", ROOT.parent / "contoso-sources"))
+
+CONFIG = SOURCES / "contoso-erp" / "debezium-connector.json"
 TOPIC = "contoso.erp.customer"
-SCHEMA = ROOT / "sources" / "contoso-erp" / "schema.sql"
+SCHEMA = SOURCES / "contoso-erp" / "schema.sql"
 
 
 def reset_topic() -> None:
     """Drop the change topic so the run's watermark means this run.
 
-    rpk lives in the redpanda container; deleting through docker keeps the
-    dependency to `docker`, which is already a prerequisite, rather than adding
-    an admin client to the project.
+    THROUGH THE BROKER, NOT THROUGH DOCKER. This used to `docker exec` into a
+    container it named literally -- `...-redpanda-1` -- with `check=False` and
+    the output captured. When G13 made the vendor stack generated from
+    contoso-sources, the broker became `...-contoso-erp-broker-1` and this
+    silently stopped doing anything: every re-run replayed onto a topic that
+    still held the last one, the watermark gate failed against exactly twice
+    the expected count, and the message blamed Debezium.
+
+    Two faults, and the quieter one was worse. A container name is deployment
+    knowledge this product should not hold at all; swallowing the failure is
+    what let it be wrong for a day without saying so. The admin client talks to
+    the same bootstrap the consumer already uses, so it works against a real
+    Kafka too -- and a failure to delete is now raised rather than captured.
     """
-    subprocess.run(
-        [
-            "docker",
-            "exec",
-            "fabric-platform-notebook-pipelines-redpanda-1",
-            "rpk",
-            "topic",
-            "delete",
-            TOPIC,
-        ],
-        capture_output=True,
-        check=False,
+    from confluent_kafka.admin import AdminClient
+
+    admin = AdminClient({"bootstrap.servers": REDPANDA})
+    if TOPIC not in admin.list_topics(timeout=30).topics:
+        return
+    for fut in admin.delete_topics([TOPIC], operation_timeout=30).values():
+        fut.result()  # raises if the delete failed -- which is the point
+    # Deletion is asynchronous: the broker acknowledges before the log is gone,
+    # and Debezium recreating it underneath a half-deleted topic is how a
+    # "clean" stream ends up holding the old one.
+    for _ in range(30):
+        if TOPIC not in admin.list_topics(timeout=10).topics:
+            return
+        time.sleep(1)
+    raise SystemExit(
+        f"topic {TOPIC!r} still exists after 30s -- refusing to replay onto it, "
+        f"because the watermark gate would then be measuring two runs."
     )
 
 
@@ -56,6 +79,23 @@ def main() -> int:
         conn.execute(cast("LiteralString", SCHEMA.read_text(encoding="utf-8")))
 
     cfg = json.loads(CONFIG.read_text(encoding="utf-8"))
+
+    # OVERRIDE THE TOPOLOGY, KEEP THE CAPTURE. The vendor's connector file names
+    # `erp-postgres` because that is what the database was called in the
+    # platform the file came from. Where the database LISTENS is a deployment
+    # fact; everything else in that file -- plugin, slot, table list, snapshot
+    # mode, converters -- describes the capture and is the vendor's to state.
+    # contoso-sources' own seeder draws the same line, in the same words.
+    #
+    # This was not needed while the platform hand-wrote its compose and happened
+    # to name the service `erp-postgres` too. G13 made the vendor stack
+    # GENERATED from contoso-sources, which names it `contoso-erp-db`, and the
+    # two silently stopped matching: Debezium answered
+    # `Connector configuration is invalid ... The connection attempt failed`,
+    # which names neither the host nor the rename. G13 was verified by
+    # `compose config` and the test suite, and neither can see this.
+    cfg["config"]["database.hostname"] = os.environ.get("ERP_DB_HOST", "contoso-erp-db")
+
     name = cfg["name"]
 
     # Delete first, so a re-run starts from a clean stream.

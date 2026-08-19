@@ -83,13 +83,25 @@ def preflight() -> None:
     # even up, and says which command fixes it.
     # Every vendor, not just the first: a missing contoso-web fixture fails the
     # same silent way, and checking only POS would let it through.
-    data = HERE.parent / "sources" / "_data"
+    # THE VENDORS' OWN REPOSITORY, not a directory beside this one. This read
+    # `HERE.parent / "sources" / "_data"` — correct while this product lived
+    # inside the platform, which carried a copy of every vendor. G13 moved the
+    # vendors to contoso-sources and G2 moved this product out of the platform,
+    # so the old path names a directory that exists in neither repository now.
+    #
+    # SOURCES is the platform's env var, exported when it runs these steps;
+    # falling back to a sibling checkout keeps a bare `python steps/pipeline.py`
+    # working for someone driving it by hand.
+    sources = pathlib.Path(
+        os.environ.get("SOURCES", HERE.parent.parent / "contoso-sources")
+    )
+    data = sources / "_data"
 
     def missing(what: str) -> SystemExit:
         return SystemExit(
             f"the vendor's exports are not materialised ({what}).\n"
-            f"  run `make sources` — sources/_data/ is gitignored, so a "
-            f"fresh clone has nothing for the source APIs to serve."
+            f"  run `make sources` — {data} is gitignored in contoso-sources, "
+            f"so a fresh clone has nothing for the source APIs to serve."
         )
 
     for vendor, feeds in (

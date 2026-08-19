@@ -19,6 +19,7 @@ starts cross-checking the number without anyone remembering to enable it.
 
 from __future__ import annotations
 
+import os
 import pathlib
 import subprocess
 import tempfile
@@ -26,6 +27,16 @@ import tempfile
 import state
 from fabric import T, log, server_cert_pem, token
 from semantic_model import DAX, PBI_AUD
+
+# THE IMAGE IS BUILT FROM THE PLATFORM'S Dockerfile. `docker/` belongs to the
+# platform -- it is how that repository packages the tools this step drives --
+# so the build has to run there. Building from the product's directory looked
+# right while the two were one repository and fails with a bare
+# `returned non-zero exit status 1` now that they are not.
+PLATFORM_DIR = pathlib.Path(
+    os.environ.get("PLATFORM", pathlib.Path(__file__).resolve().parent.parent)
+)
+
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 IMAGE = "fabric-platform-notebook-pipelines-xmla"
@@ -36,7 +47,7 @@ RAN, NO_SURFACE = 0, 3
 def build() -> None:
     subprocess.run(
         ["docker", "build", "-q", "-f", "docker/xmla/Dockerfile", "-t", IMAGE, "."],
-        cwd=ROOT,
+        cwd=PLATFORM_DIR,
         check=True,
         capture_output=True,
     )

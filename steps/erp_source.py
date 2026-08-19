@@ -11,6 +11,7 @@ lands a Parquet file DESCRIBING a change feed; this produces one.
 
 from __future__ import annotations
 
+import os
 import pathlib
 from typing import LiteralString, cast
 
@@ -21,7 +22,15 @@ from psycopg import sql
 from sources import erp_dsn
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SCHEMA = ROOT / "sources" / "contoso-erp" / "schema.sql"
+# THE VENDORS LIVE IN THEIR OWN REPOSITORY. These paths read
+# `ROOT / "sources" / ...`, which was correct while this product lived inside a
+# platform that carried a copy of every vendor. G13 moved the vendors to
+# contoso-sources and G2 moved this product out, so that path now names a
+# directory in neither repository. SOURCES is exported by the platform that
+# runs these steps; the fallback keeps a hand-run working.
+SOURCES = pathlib.Path(os.environ.get("SOURCES", ROOT.parent / "contoso-sources"))
+
+SCHEMA = SOURCES / "contoso-erp" / "schema.sql"
 
 COLUMNS = [
     "erp_customer_id",

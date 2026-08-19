@@ -22,6 +22,7 @@ import os
 import pathlib
 import shutil
 import subprocess
+import sys
 
 import state
 from contoso_product import gold_dir
@@ -54,25 +55,30 @@ def in_dbt_container(*args: str) -> int:
         "WAREHOUSE_TOKEN": token(SQL_AUD),
         "LAKEHOUSE_ID": st["lakehouse"],
     }
-    overlay = []
-    if os.environ.get("TERMINAL") == "1":
-        overlay = ["-f", "compose/terminal.yml"]
+    # ASK THE PLATFORM TO RUN ITS OWN CONTAINER. This used to assemble the
+    # compose invocation itself -- `--env-file versions.env`, an explicit
+    # `-f compose/docker-compose.yml -f compose/sources.yml` -- which was
+    # possible only while this product lived inside the platform. Both halves
+    # are now wrong: the files are in another repository, and
+    # `compose/sources.yml` does not exist at all since G13 made the vendor
+    # stack generated.
+    #
+    # The platform's own compose.py assembles the right file set, including the
+    # generated vendor fragment. Calling it is what keeps that list the
+    # platform's business -- the product knows it needs a dbt container, not
+    # which files declare one.
+    platform = os.environ.get("PLATFORM")
+    if not platform:
+        raise SystemExit(
+            "PLATFORM is not set: gold runs dbt in a container the platform "
+            "defines, so it needs to know which platform is running it. The "
+            "platform exports this; run through `make verify PRODUCT=...`."
+        )
+    platform = pathlib.Path(platform)
     return subprocess.run(
         [
-            "docker",
-            "compose",
-            "--env-file",
-            "versions.env",
-            "-f",
-            "compose/docker-compose.yml",
-            "-f",
-            "compose/sources.yml",
-            # The SAME file set every other caller uses. Compose decides whether
-            # a running container matches by hashing the config it is given, so
-            # a `run` with a shorter -f list recreates fabric-emulator to match
-            # — which reverted the image and dropped the terminal overlay in the
-            # middle of a recording, and read as the pipeline failing.
-            *overlay,
+            sys.executable,
+            str(platform / "scripts" / "compose.py"),
             "--profile",
             "gold",
             "run",
@@ -81,7 +87,7 @@ def in_dbt_container(*args: str) -> int:
             f"LAKEHOUSE_ID={st['lakehouse']}",
             *args,
         ],
-        cwd=ROOT,
+        cwd=platform,
         env=env,
     ).returncode
 

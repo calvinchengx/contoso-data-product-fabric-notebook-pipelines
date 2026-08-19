@@ -17,13 +17,30 @@ non-zero if their checks fail.
 
 from __future__ import annotations
 
+import os
 import pathlib
 import subprocess
 
 from fabric import T, log
 
+# THE IMAGE IS BUILT FROM THE PLATFORM'S Dockerfile. `docker/` belongs to the
+# platform -- it is how that repository packages the tools this step drives --
+# so the build has to run there. Building from the product's directory looked
+# right while the two were one repository and fails with a bare
+# `returned non-zero exit status 1` now that they are not.
+PLATFORM_DIR = pathlib.Path(
+    os.environ.get("PLATFORM", pathlib.Path(__file__).resolve().parent.parent)
+)
+
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SHOTS = ROOT / "capture" / "shots"
+# THE CAPTURE SCRIPTS AND THEIR OUTPUT ARE THE PLATFORM'S. `capture/` holds
+# om_verify.js and the recorder that photographs the catalog -- tooling about how
+# a run is demonstrated, not about the data product. Mounting the PRODUCT's
+# `capture/` handed the container an empty directory and it exited 1 with
+# "the catalog did not verify", which reads like a broken catalog rather than a
+# missing mount.
+SHOTS = PLATFORM_DIR / "capture" / "shots"
 STOP = SHOTS / ".stop"
 IMAGE = "contoso-capture"
 
@@ -31,7 +48,7 @@ IMAGE = "contoso-capture"
 def build() -> None:
     subprocess.run(
         ["docker", "build", "-q", "-f", "docker/capture/Dockerfile", "-t", IMAGE, "."],
-        cwd=ROOT,
+        cwd=PLATFORM_DIR,
         check=True,
         capture_output=True,
     )
@@ -51,15 +68,17 @@ def run(script: str, detach: bool = False, **env: str):
         "host",
         *(["-d"] if detach else []),
         "-v",
-        f"{ROOT / 'capture'}:/capture",
+        f"{PLATFORM_DIR / 'capture'}:/capture",
         *passthrough,
         IMAGE,
         f"/capture/{script}",
     ]
     if detach:
-        out = subprocess.run(cmd, cwd=ROOT, check=True, capture_output=True, text=True)
+        out = subprocess.run(
+            cmd, cwd=PLATFORM_DIR, check=True, capture_output=True, text=True
+        )
         return out.stdout.strip()
-    return subprocess.run(cmd, cwd=ROOT)
+    return subprocess.run(cmd, cwd=PLATFORM_DIR)
 
 
 def start_watch() -> str:
