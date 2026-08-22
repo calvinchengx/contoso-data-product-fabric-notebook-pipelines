@@ -54,6 +54,13 @@ def in_dbt_container(*args: str) -> int:
         "WAREHOUSE_ID": st["warehouse"],
         "WAREHOUSE_TOKEN": token(SQL_AUD),
         "LAKEHOUSE_ID": st["lakehouse"],
+        # DBT_-PREFIXED SINCE CORE v0.6.0. Gold's sources read
+        # DBT_SILVER_DATABASE and DBT_SILVER_SCHEMA (default dbo); the old
+        # `env_var('CONTOSO_SILVER_DATABASE', env_var('LAKEHOUSE_ID'))` is gone,
+        # so LAKEHOUSE_ID alone no longer reaches dbt. LAKEHOUSE_ID STAYS,
+        # because the platform's own docker/dbt/reflect.py requires it: here it
+        # is a platform fact, not the dbt fallback the other leaves dropped.
+        "DBT_SILVER_DATABASE": st["lakehouse"],
     }
     # ASK THE PLATFORM TO RUN ITS OWN CONTAINER. This used to assemble the
     # compose invocation itself -- `--env-file versions.env`, an explicit
@@ -85,6 +92,8 @@ def in_dbt_container(*args: str) -> int:
             "--rm",
             "-e",
             f"LAKEHOUSE_ID={st['lakehouse']}",
+            "-e",
+            f"DBT_SILVER_DATABASE={st['lakehouse']}",
             *args,
         ],
         cwd=platform,
