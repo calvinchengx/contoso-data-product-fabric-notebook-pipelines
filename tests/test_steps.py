@@ -1148,10 +1148,38 @@ def test_the_relationships_contract_rule_actually_checks_the_relationship():
 
 def test_openmetadata_url_is_env():
     """OM_URL is the catalog address. Hardcoding localhost ships the
-    emulator into production the same way a hardcoded vault URL would."""
-    src = (ROOT / "steps" / "govern.py").read_text(encoding="utf-8")
-    assert 'os.environ.get("OM_URL"' in src
-    assert 'OM = "http://localhost:8585' not in src
+    emulator into production the same way a hardcoded vault URL would.
+
+    THIS TEST READ ONE FILE AND THE HARDCODED PORT WAS IN ANOTHER. It named
+    `govern.py`, and `capture.py` passed a literal
+    `OM_URL="http://localhost:8585"` into the Playwright container, overriding
+    the address the Makefile exports. The suite was green the whole time the
+    flagship's Acceptance and Attribute runs were failing on
+    `ERR_CONNECTION_REFUSED at http://localhost:8585/`. A guard written for
+    exactly this defect missed it by being pointed at a single file.
+
+    So it sweeps every step now. A new step cannot hardcode the catalog
+    without this failing, and it does not have to be remembered here.
+    """
+    steps = sorted((ROOT / "steps").glob("*.py"))
+    assert len(steps) > 1, "expected several steps; the sweep found almost none"
+
+    offenders = [
+        f"{f.name}:{i}: {line.strip()}"
+        for f in steps
+        for i, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1)
+        if "localhost:8585" in line and not line.lstrip().startswith("#")
+    ]
+    assert not offenders, (
+        "the catalog port is hardcoded, and compose publishes 18587:\n  "
+        + "\n  ".join(offenders)
+    )
+
+    # And the two that address the catalog do read it from the environment,
+    # so the sweep above cannot pass merely because nobody mentions a port.
+    for name in ("govern.py", "capture.py"):
+        src = (ROOT / "steps" / name).read_text(encoding="utf-8")
+        assert 'os.environ.get("OM_URL"' in src, f"{name} does not read OM_URL"
 
 
 def test_the_product_is_imported_not_restated():
