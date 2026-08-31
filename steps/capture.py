@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import os
 import pathlib
+import re
 import subprocess
 
 from fabric import T, log
@@ -31,6 +32,20 @@ from fabric import T, log
 PLATFORM_DIR = pathlib.Path(
     os.environ.get("PLATFORM", pathlib.Path(__file__).resolve().parent.parent)
 )
+
+
+# `OM_URL` NAMES TWO DIFFERENT THINGS ON THE TWO SIDES OF THIS CALL, WHICH IS
+# HOW A FIXED PORT OUTLIVED THE MAKEFILE THAT STOPPED HARDCODING ONE. On the
+# Python side it is the API base the Makefile exports, ending `/api/v1`; the
+# browser scripts want the ORIGIN, because they navigate the UI rather than
+# call it. This step used to bridge that by passing a literal
+# `http://localhost:8585`, which overrode the export and pointed Playwright at
+# the port the catalog no longer publishes: compose moved it to 18587 to stop
+# colliding with the two sibling platforms.
+#
+# Derived, so the port lives in exactly one place: compose/governance.yml.
+OM_API = os.environ.get("OM_URL", "http://localhost:18587/api/v1").rstrip("/")
+OM_ORIGIN = re.sub(r"/api/v\d+$", "", OM_API)
 
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -110,7 +125,7 @@ def main() -> int:
     """Verify and photograph the catalog. The flow video is recorded by
     `make verify`, which is the only place that knows when the run starts."""
     build()
-    r = run("om_verify.js", OM_URL="http://localhost:8585")
+    r = run("om_verify.js", OM_URL=OM_ORIGIN)
     assert r.returncode == 0, (
         f"the catalog did not verify (exit {r.returncode}) — the screenshots "
         f"would be pictures of something that is not there"

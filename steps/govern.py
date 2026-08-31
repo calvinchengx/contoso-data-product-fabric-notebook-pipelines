@@ -34,7 +34,11 @@ from fabric import log
 from sources import ERP_DB, ERP_TOPIC, POS_API
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-OM = os.environ.get("OM_URL", "http://localhost:8585/api/v1").rstrip("/")
+# 18587, not 8585: compose/governance.yml moved the published port to stop
+# colliding with the two sibling platforms, and this default stayed behind.
+# It works under `make`, which exports OM_URL, so the wrong number is only
+# reachable when a step is run by hand, which is when it is hardest to read.
+OM = os.environ.get("OM_URL", "http://localhost:18587/api/v1").rstrip("/")
 # OpenMetadata's seeded dev admin. Basic auth is not enough — the API wants a
 # JWT, obtained by exchanging these at /users/login.
 OM_USER = "admin@open-metadata.org"
