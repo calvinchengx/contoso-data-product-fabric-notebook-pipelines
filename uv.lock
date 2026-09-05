@@ -387,11 +387,11 @@ dev = [
 requires-dist = [
     { name = "confluent-kafka", specifier = ">=2.6,<3" },
     { name = "contoso-data-product", url = "https://github.com/calvinchengx/contoso-data-product/releases/download/v0.6.0/contoso_data_product-0.6.0-py3-none-any.whl" },
-    { name = "contoso-fixtures", url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/contoso_fixtures-0.29.0-py3-none-any.whl" },
-    { name = "contoso-fixtures-advanced", url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/contoso_fixtures_advanced-0.29.0-py3-none-any.whl" },
+    { name = "contoso-fixtures", url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/contoso_fixtures-0.35.0-py3-none-any.whl" },
+    { name = "contoso-fixtures-advanced", url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/contoso_fixtures_advanced-0.35.0-py3-none-any.whl" },
     { name = "deltalake", specifier = ">=0.23,<2" },
-    { name = "fabric-emulator-notebookutils", url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/fabric_emulator_notebookutils-0.29.0-py3-none-any.whl" },
-    { name = "fabric-target", extras = ["real", "sessions"], url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/fabric_target-0.29.0-py3-none-any.whl" },
+    { name = "fabric-emulator-notebookutils", url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/fabric_emulator_notebookutils-0.35.0-py3-none-any.whl" },
+    { name = "fabric-target", extras = ["real", "sessions"], url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/fabric_target-0.35.0-py3-none-any.whl" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2,<4" },
     { name = "pyarrow", specifier = ">=18,<24" },
     { name = "pyspark-client", specifier = "==4.1.1" },
@@ -408,15 +408,15 @@ dev = [
 
 [[package]]
 name = "contoso-fixtures"
-version = "0.29.0"
-source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/contoso_fixtures-0.29.0-py3-none-any.whl" }
+version = "0.35.0"
+source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/contoso_fixtures-0.35.0-py3-none-any.whl" }
 dependencies = [
     { name = "fabric-emulator-notebookutils" },
     { name = "fabric-target" },
     { name = "requests" },
 ]
 wheels = [
-    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/contoso_fixtures-0.29.0-py3-none-any.whl", hash = "sha256:003c3d2e32e984676b000b1838c1754753d8e8ef10f668ef1311c70974f7bf48" },
+    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/contoso_fixtures-0.35.0-py3-none-any.whl", hash = "sha256:09e648aea0b3deeea057b3e749cc9e175aecefc44d20ae8cb9388ea16d309439" },
 ]
 
 [package.metadata]
@@ -428,14 +428,14 @@ requires-dist = [
 
 [[package]]
 name = "contoso-fixtures-advanced"
-version = "0.29.0"
-source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/contoso_fixtures_advanced-0.29.0-py3-none-any.whl" }
+version = "0.35.0"
+source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/contoso_fixtures_advanced-0.35.0-py3-none-any.whl" }
 dependencies = [
     { name = "contoso-fixtures" },
     { name = "pyarrow" },
 ]
 wheels = [
-    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/contoso_fixtures_advanced-0.29.0-py3-none-any.whl", hash = "sha256:761f08832bb3b6a59bfae36951066e7ca026692f870e9a045d71cadb5c649fb1" },
+    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/contoso_fixtures_advanced-0.35.0-py3-none-any.whl", hash = "sha256:d641500598fc75a5b5828d6c809395a671c4456a13ef7cc0e95fa7698f2f7f19" },
 ]
 
 [package.metadata]
@@ -526,18 +526,18 @@ wheels = [
 
 [[package]]
 name = "fabric-emulator-notebookutils"
-version = "0.29.0"
-source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/fabric_emulator_notebookutils-0.29.0-py3-none-any.whl" }
+version = "0.35.0"
+source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/fabric_emulator_notebookutils-0.35.0-py3-none-any.whl" }
 wheels = [
-    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/fabric_emulator_notebookutils-0.29.0-py3-none-any.whl", hash = "sha256:626d37d17b4ec2542739f5305319af8e75fd7df2d88164a301ed6f59cc32804f" },
+    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/fabric_emulator_notebookutils-0.35.0-py3-none-any.whl", hash = "sha256:93f97f4ed90020c4580602cc9554da55b429ab44340da57b713040dd92c3ba61" },
 ]
 
 [[package]]
 name = "fabric-target"
-version = "0.29.0"
-source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/fabric_target-0.29.0-py3-none-any.whl" }
+version = "0.35.0"
+source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/fabric_target-0.35.0-py3-none-any.whl" }
 wheels = [
-    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.29.0/fabric_target-0.29.0-py3-none-any.whl", hash = "sha256:065a6da48ebe0bcae1879820749ae8a0e896680ed4b51247ffc81aadfcf5173c" },
+    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/fabric_target-0.35.0-py3-none-any.whl", hash = "sha256:620473b1af6de4e93fb9993c4c4da12f3800f6f51759c0cd4d45852b14b455e3" },
 ]
 
 [package.optional-dependencies]
