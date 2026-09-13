@@ -71,10 +71,10 @@ package = false
 # A RELEASE, NOT A PATH: a leaf that resolves core from a sibling checkout
 # cannot be cloned on its own, which is DoD item 1 in the family plan.
 contoso-data-product = { url = "https://github.com/calvinchengx/contoso-data-product/releases/download/v0.6.0/contoso_data_product-0.6.0-py3-none-any.whl" }
-fabric-target = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/fabric_target-0.35.0-py3-none-any.whl" }
-contoso-fixtures = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/contoso_fixtures-0.35.0-py3-none-any.whl" }
-contoso-fixtures-advanced = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/contoso_fixtures_advanced-0.35.0-py3-none-any.whl" }
-fabric-emulator-notebookutils = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.35.0/fabric_emulator_notebookutils-0.35.0-py3-none-any.whl" }
+fabric-target = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.36.0/fabric_target-0.36.0-py3-none-any.whl" }
+contoso-fixtures = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.36.0/contoso_fixtures-0.36.0-py3-none-any.whl" }
+contoso-fixtures-advanced = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.36.0/contoso_fixtures_advanced-0.36.0-py3-none-any.whl" }
+fabric-emulator-notebookutils = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.36.0/fabric_emulator_notebookutils-0.36.0-py3-none-any.whl" }
 
 [tool.ruff]
 line-length = 88
