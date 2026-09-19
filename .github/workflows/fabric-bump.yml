@@ -1,0 +1,77 @@
+# The fabric-wheel bump this leaf raises for itself, the sibling of
+# product-bump.yml and for the same reason: a leaf editing its OWN
+# pyproject.toml needs nothing but the `GITHUB_TOKEN` its workflow already has,
+# so there is no cross-repository secret to create, over-scope or let expire.
+#
+# WHY IT EXISTS. Four wheels here come from a fabric-emulator release, and the
+# platform's acceptance run refuses to verify a release while this repository
+# pins a different one:
+#
+#   THE CLIENT AND THE IMAGE DISAGREE.
+#   ... pyproject.toml names a release other than the pinned v0.39.0
+#
+# Every other consumer of a fabric release adopts it by itself -- the three
+# platforms repin and commit inside their own acceptance runs -- so this
+# repository was the one link in the chain that only a person could move, and
+# until somebody did, the flagship platform stayed red. v0.37.0, v0.38.0 and
+# v0.39.0 shipped inside 26 hours on 18-19 September and each one blocked it
+# again.
+#
+# THIS DOES NOT REPLACE THE GUARD. The acceptance run's refusal is what makes a
+# stale pin fail; this is the convenience that means somebody rarely has to act
+# on it.
+name: Fabric bump
+
+on:
+  # An hour after product-bump, so two pull requests never race on uv.lock.
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.3"
+      - id: plan
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          uv run --no-project python scripts/fabric_pin.py --plan >> "$GITHUB_OUTPUT"
+      - if: steps.plan.outputs.bump == 'yes'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          branch="chore/fabric-v$VERSION"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          uv run --no-project python scripts/fabric_pin.py --write "$VERSION"
+          # THE LOCK TOO. `--frozen` is what CI installs, so a pin moved without
+          # it leaves the lockfile resolving the previous release and the PR
+          # fails this repository's own checks.
+          uv lock
+          git commit -qam "chore: fabric wheels v$VERSION"
+          git push -q origin "$branch"
+          gh pr create --fill --base "${{ github.event.repository.default_branch }}" \
+            --title "chore: fabric wheels v$VERSION" \
+            --body "fabric-emulator released v$VERSION. The platform's acceptance run refuses to verify a release while this repository pins a different one, so this bump is what unblocks it.
+
+          Raised by this repository's own scheduled workflow using \`GITHUB_TOKEN\`, so no cross-repository secret is involved.
+
+          **CI is dispatched on the branch rather than reported on this pull request.** GitHub does not start workflows from events its own \`GITHUB_TOKEN\` raised, so a pull request opened here shows no checks at all -- which reads exactly like a green one. The run is linked below; read it before merging."
+          # Dispatch it explicitly, for the reason in the body. Without this the
+          # bump would arrive unverified and look verified.
+          gh workflow run ci.yml --ref "$branch"
+          sleep 10
+          url=$(gh run list --workflow ci.yml --branch "$branch" --limit 1 --json url -q '.[0].url')
+          gh pr comment "$branch" --body "CI for this branch: $url"

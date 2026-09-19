@@ -14,6 +14,11 @@ on:
   push:
     branches: [main]
   pull_request:
+  # The bump workflow raises its pull request with `GITHUB_TOKEN`, and GitHub
+  # does not start workflows from events that token raised -- such a pull
+  # request shows NO checks, which reads exactly like a green one. So the bump
+  # dispatches this workflow on its branch and links the run.
+  workflow_dispatch:
 
 permissions:
   contents: read
