@@ -31,6 +31,13 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  # `gh workflow run` below is a real API call this token makes, not an event
+  # GitHub chains automatically -- so the usual "GITHUB_TOKEN cannot trigger
+  # workflows" restriction (which only silences event-based chaining, to stop
+  # infinite loops) does not apply, but the token still needs the scope. Without
+  # it the dispatch 403s -- AFTER the pull request is already open -- and the
+  # job reports failure despite having done its real job. Measured on v0.40.0.
+  actions: write
 
 jobs:
   bump:
@@ -52,6 +59,17 @@ jobs:
           VERSION: ${{ steps.plan.outputs.version }}
         run: |
           branch="chore/fabric-v$VERSION"
+          # IDEMPOTENT: a branch/PR for this exact version may already exist --
+          # from yesterday's run, if nobody has merged it yet. Retrying the push
+          # then fails as a non-fast-forward (a fresh checkout has no ancestry
+          # with the existing remote branch) and reports the whole job red for a
+          # version that is already proposed. One open PR per version is enough;
+          # exit early rather than fail loudly over something already in hand.
+          existing=$(gh pr list --head "$branch" --state open --json number -q '.[0].number')
+          if [ -n "$existing" ]; then
+            echo "chore/fabric-v$VERSION is already open as #$existing; nothing to do."
+            exit 0
+          fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "$branch"
