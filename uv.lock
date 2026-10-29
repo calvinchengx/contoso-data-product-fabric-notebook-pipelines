@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -387,11 +387,11 @@ dev = [
 requires-dist = [
     { name = "confluent-kafka", specifier = ">=2.6,<3" },
     { name = "contoso-data-product", url = "https://github.com/calvinchengx/contoso-data-product/releases/download/v0.6.2/contoso_data_product-0.6.2-py3-none-any.whl" },
-    { name = "contoso-fixtures", url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.40.0/contoso_fixtures-0.40.0-py3-none-any.whl" },
-    { name = "contoso-fixtures-advanced", url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.40.0/contoso_fixtures_advanced-0.40.0-py3-none-any.whl" },
+    { name = "contoso-fixtures", url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.41.0/contoso_fixtures-0.41.0-py3-none-any.whl" },
+    { name = "contoso-fixtures-advanced", url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.41.0/contoso_fixtures_advanced-0.41.0-py3-none-any.whl" },
     { name = "deltalake", specifier = ">=0.23,<2" },
-    { name = "fabric-emulator-notebookutils", url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.40.0/fabric_emulator_notebookutils-0.40.0-py3-none-any.whl" },
-    { name = "fabric-target", extras = ["real", "sessions"], url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.40.0/fabric_target-0.40.0-py3-none-any.whl" },
+    { name = "fabric-emulator-notebookutils", url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.41.0/fabric_emulator_notebookutils-0.41.0-py3-none-any.whl" },
+    { name = "fabric-target", extras = ["real", "sessions"], url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.41.0/fabric_target-0.41.0-py3-none-any.whl" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2,<4" },
     { name = "pyarrow", specifier = ">=18,<24" },
     { name = "pyspark-client", specifier = "==4.1.1" },
@@ -408,15 +408,15 @@ dev = [
 
 [[package]]
 name = "contoso-fixtures"
-version = "0.40.0"
-source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.40.0/contoso_fixtures-0.40.0-py3-none-any.whl" }
+version = "0.41.0"
+source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.41.0/contoso_fixtures-0.41.0-py3-none-any.whl" }
 dependencies = [
     { name = "fabric-emulator-notebookutils" },
     { name = "fabric-target" },
     { name = "requests" },
 ]
 wheels = [
-    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.40.0/contoso_fixtures-0.40.0-py3-none-any.whl", hash = "sha256:f441f2404a7f9f162c38a4beefdb7d845a17dbd349b4c86c2cc16feb7f70130b" },
+    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.41.0/contoso_fixtures-0.41.0-py3-none-any.whl", hash = "sha256:a274dc45b3b3b8ce61e2a2d262991990b0abeba8e781327f9e765798c17e8347" },
 ]
 
 [package.metadata]
@@ -428,14 +428,14 @@ requires-dist = [
 
 [[package]]
 name = "contoso-fixtures-advanced"
-version = "0.40.0"
-source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.40.0/contoso_fixtures_advanced-0.40.0-py3-none-any.whl" }
+version = "0.41.0"
+source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.41.0/contoso_fixtures_advanced-0.41.0-py3-none-any.whl" }
 dependencies = [
     { name = "contoso-fixtures" },
     { name = "pyarrow" },
 ]
 wheels = [
-    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.40.0/contoso_fixtures_advanced-0.40.0-py3-none-any.whl", hash = "sha256:10f4dd941af82b5f25d18ab047e6df58a7287be13f680434ecd8b1dfb0754bb3" },
+    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.41.0/contoso_fixtures_advanced-0.41.0-py3-none-any.whl", hash = "sha256:a50868d77b5ab15dd8aa49c43620e51c7f3d9ce242d77e88948893d90917201c" },
 ]
 
 [package.metadata]
@@ -526,18 +526,18 @@ wheels = [
 
 [[package]]
 name = "fabric-emulator-notebookutils"
-version = "0.40.0"
-source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.40.0/fabric_emulator_notebookutils-0.40.0-py3-none-any.whl" }
+version = "0.41.0"
+source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.41.0/fabric_emulator_notebookutils-0.41.0-py3-none-any.whl" }
 wheels = [
-    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.40.0/fabric_emulator_notebookutils-0.40.0-py3-none-any.whl", hash = "sha256:ae535d6e7a85bce18959a74c578dff590c9ae9793b8e460cbda7824c80ff58ce" },
+    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.41.0/fabric_emulator_notebookutils-0.41.0-py3-none-any.whl", hash = "sha256:3bf0e04b50d9a8b7b71b77bd4d6c258af8ce87eef147529fa6ce703cc71cdb62" },
 ]
 
 [[package]]
 name = "fabric-target"
-version = "0.40.0"
-source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.40.0/fabric_target-0.40.0-py3-none-any.whl" }
+version = "0.41.0"
+source = { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.41.0/fabric_target-0.41.0-py3-none-any.whl" }
 wheels = [
-    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.40.0/fabric_target-0.40.0-py3-none-any.whl", hash = "sha256:6aef41fa16e3fdf1dbf17ba9fd520c81f360ed503d9af15c3c6f2f2486a0a264" },
+    { url = "https://github.com/calvinchengx/fabric-emulator/releases/download/v0.41.0/fabric_target-0.41.0-py3-none-any.whl", hash = "sha256:e846d09dfdea7f253c130688a81f547665045b746ea45f236cebdcd328cce123" },
 ]
 
 [package.optional-dependencies]
@@ -551,7 +551,7 @@ sessions = [
 [package.metadata]
 requires-dist = [
     { name = "azure-identity", marker = "extra == 'real'", specifier = ">=1.17" },
-    { name = "requests", marker = "extra == 'sessions'", specifier = ">=2.31" },
+    { name = "requests", marker = "extra == 'sessions'", specifier = ">=2.32" },
 ]
 provides-extras = ["real", "sessions"]
 
